@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  app_mysql:
+    image: mysql:latest
+    restart: always
+    container_name: app_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123123
+      MYSQL_DATABASE: items
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-tier
+  app_api:
+    build:
+      dockerfile: Dockerfile
+    image: app_api
+    container_name: app_api
+    env_file:
+      - ./.env.example
+    ports:
+      - "5000:5000"
+    networks:
+      - app-tier
+    environment:
+      DB_HOST: app_mysql
+      DB_PORT: 3306
+    restart: always
+    depends_on:
+      - app_mysql
+
+volumes:
+  mysql-data:
+    driver: local
+networks:
+  app-tier:
+    driver: bridge
